@@ -1,6 +1,6 @@
 'use strict';
 
-var fs = require('fs');
+var fs = require('./fsutils');
 var path = require('path');
 var tiptoe = require('tiptoe');
 
@@ -78,6 +78,9 @@ var lemon = function(baseDir) {
 };
 
 lemon.prototype.init = function(callback) {
+	// Filters
+	this.filters = require('./filters');
+
 	callback();
 };
 
@@ -110,15 +113,33 @@ lemon.prototype.load = function(callback) {
 
 lemon.prototype.process = function(callback) {
 	var juice = this;
+	var files = [];
 
 	tiptoe(
 		function() {
-			juice.files.forEachCallback(function(fn, cb) {
-				//var extname = path.extname(fn).toLowerCase();
+			var next = this;
 
-				cb();
+			juice.files.forEachCallback(function(file, cb) {
+
+				// Calls this function when done processing the file
+				var filterCB = function(data) {
+					files.push(data);
+					cb();
+				};
+
+				if (juice.filters.hasOwnProperty(file.ext)) {
+					var method = juice.filters[file.ext].bind(juice);
+					method(file, filterCB);
+				}
+				else {
+					files.push(file);
+					cb();
+				}
 			},
-			this);
+			function() {
+				juice.files = files;
+				next();
+			});
 		},
 		function finish(err) {
 			callback(err);
@@ -131,24 +152,44 @@ lemon.prototype.generate = function(callback) {
 
 	tiptoe(
 		function() {
-			var next = this;
-			fs.mkdir(juice.public_dir, function(err) {
-				if (err) {
-					if (err.code != 'EEXIST') {
-						next(err);
-						return;
-					}
-				}
-
-				next();
-			});
-		},
-		function() {
 			juice.files.forEachCallback(function(file, cb) {
 				var source = path.join(juice.source_dir, file.file);
-				var destination = path.join(juice.public_dir, file.file);
-				console.log('%s -> %s', source, destination);
-				cb();
+				var destination;
+				if (file.dest)
+					destination = file.dest;
+				else
+					destination = file.file;
+				destination = path.join(juice.public_dir, destination);
+
+				console.log('Writing file %s', destination.replace(juice.public_dir + path.sep, ''));
+				tiptoe(
+					function() {
+						var next = this;
+						fs.mkdirParent(path.dirname(destination), function(err) {
+							if (err && err.code != 'EEXIST') {
+								next(err);
+								return;
+							}
+
+							next();
+						});
+					},
+					function() {
+						if (file.contents) {
+							fs.writeFile(destination, file.contents, 'utf8', this);
+						}
+						else {
+							fs.copyFile(source, destination, this);
+						}
+					},
+					function(err) {
+						if (err) {
+							console.error(err);
+						}
+
+						cb();
+					}
+				);
 			},
 			this);
 		},
