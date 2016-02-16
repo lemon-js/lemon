@@ -105,6 +105,8 @@ lemon.prototype.process = function(callback) {
 	tiptoe(
 		function() {
 			juice.files.forEachCallback(function(fn, cb) {
+				//var extname = path.extname(fn).toLowerCase();
+
 				cb();
 			},
 			this);
@@ -123,7 +125,10 @@ lemon.prototype.generate = function(callback) {
 			var next = this;
 			fs.mkdir(juice.public_dir, function(err) {
 				if (err) {
-					console.error(err);
+					if (err.code != 'EEXIST') {
+						next(err);
+						return;
+					}
 				}
 
 				next();
