@@ -74,7 +74,6 @@ var lemon = function(baseDir) {
 	this.config_file = path.join(baseDir, 'site.json');
 	this.public_dir = path.join(baseDir, 'public');
 	this.source_dir = path.join(baseDir, 'source');
-	this.destination_dir = path.join(baseDir, 'public');
 	this.template_dir = path.join(baseDir, 'templates');
 };
 
@@ -86,9 +85,19 @@ lemon.prototype.load = function(callback) {
 	var juice = this;
 	var files = [];
 
+	// Process each entry on folders
 	var fileProcessor = function(fn) {
 		var f = fn.replace(juice.source_dir, '');
-		files.push(f);
+		var obj = {
+			file: f,
+			ext: path.extname(f).toLowerCase()
+		};
+
+		// No initial "."
+		if (obj.ext.length > 0)
+			obj.ext = obj.ext.substr(1);
+
+		files.push(obj);
 	};
 
 	var finish = function() {
@@ -136,8 +145,8 @@ lemon.prototype.generate = function(callback) {
 		},
 		function() {
 			juice.files.forEachCallback(function(file, cb) {
-				var source = path.join(juice.source_dir, file);
-				var destination = path.join(juice.public_dir, file);
+				var source = path.join(juice.source_dir, file.file);
+				var destination = path.join(juice.public_dir, file.file);
 				console.log('%s -> %s', source, destination);
 				cb();
 			},
