@@ -8,7 +8,7 @@ Array.prototype.forEachCallback = function(callback, finishCallback) {
 	var current = 0;
 	var self = this;
 
-	function next() {
+	var next = function() {
 		if (!self) {
 			console.log("Something went wrong...");
 			throw('No self!');
@@ -26,7 +26,7 @@ Array.prototype.forEachCallback = function(callback, finishCallback) {
 		
 		var cb = callback.bind(currentItem);
 		cb(currentItem, next);
-	}
+	};
 
 	next();
 };
