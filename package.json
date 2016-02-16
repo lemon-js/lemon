@@ -8,6 +8,7 @@
   ],
   "description": "A simple, node-based, static site generator",
   "dependencies": {
+    "tiptoe": "^1.0.0"
   },
   "licenses": [
     {
@@ -17,5 +18,7 @@
   ],
   "name": "lemon",
   "readme": "README.markdown",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "repository": "https://github.com/lemon-js/lemon.git",
+  "license": "MIT"
 }
