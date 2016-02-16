@@ -3,6 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 var marked = require('marked');
+var yaml = require('js-yaml');
 
 module.exports['md'] = function(file, callback) {
 	// Fix file name
@@ -20,7 +21,7 @@ module.exports['md'] = function(file, callback) {
 		var matches = data.match(/(?:.|\n)*(?:---+\n)\n*/m);
 
 		if (matches) {
-			file.headers = matches[0];
+			file.headers = yaml.safeLoad(matches[0].replace(/---+\n*/, ''));
 			file.contents = file.contents.substr(matches[0].length);
 		}
 
