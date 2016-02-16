@@ -4,66 +4,7 @@ var fs = require('./fsutils');
 var path = require('path');
 var tiptoe = require('tiptoe');
 
-Array.prototype.forEachCallback = function(callback, finishCallback) {
-	var current = 0;
-	var self = this;
-
-	var next = function() {
-		if (!self) {
-			console.log("Something went wrong...");
-			throw('No self!');
-			return;
-		}
-		if (current >= self.length) {
-			if (finishCallback) {
-				var cb = finishCallback.bind(self);
-				cb();
-			}
-			return;
-		}
-
-		var currentItem = self[current++];
-		
-		var cb = callback.bind(currentItem);
-		cb(currentItem, next);
-	};
-
-	next();
-};
-
-/**
- * Traverse filesystem (Async)
- * @param tPath String with the path to walk
- * @param filecallback Function to call on each file
- * @param callback Function to call when finished.
- */
-function traverseFS(tPath, filecallback, callback) {
-
-	var traverse = function(cPath, next) {
-		fs.readdir(cPath, function(err, files) {
-			if (!files) {
-				next();
-				return;
-			}
-
-			files.forEachCallback(function (file, cb) {
-				var fn = path.join(cPath, file);
-				fs.stat(fn, function(err, stat) {
-					if (stat.isDirectory()) {
-						traverse(fn, cb);
-					}
-					else {
-						filecallback(fn);
-						cb();
-					}
-				});
-			},
-			next);
-		});
-	};
-
-	traverse(tPath, callback);
-};
+require('./arrayutils');
 
 /**
  * Base function. Create a new 'lemon' object to get started.
@@ -108,7 +49,7 @@ lemon.prototype.load = function(callback) {
 		callback();
 	};
 
-	traverseFS(this.source_dir, fileProcessor, finish);
+	fs.traverse(this.source_dir, fileProcessor, finish);
 };
 
 lemon.prototype.process = function(callback) {

@@ -5,9 +5,12 @@
  *
  * * mkdirParent (like `mkdir -p`)
  * * copyFile 
+ * * traverse - go trough each file in the given path recursively.
  */
 
 var fs = require('fs');
+var path = require('path');
+require('./arrayutils');
 
 // Adapted from: http://lmws.net/making-directory-along-with-missing-parents-in-node-js
 fs.mkdirParent = function(dirPath, mode, callback) {
@@ -58,6 +61,43 @@ fs.copyFile = function(source, destination, callback) {
 			callback(err);
 		}
 	}
+};
+
+/**
+ * Traverse filesystem (Async)
+ * @param tPath String with the path to walk
+ * @param filecallback Function to call on each file
+ * @param callback Function to call when finished.
+ */
+fs.traverse = function(tPath, filecallback, callback) {
+
+	// Callback to invoke on each folder
+	var traverse = function(cPath, next) {
+		fs.readdir(cPath, function(err, files) {
+			if (!files) {
+				next();
+				return;
+			}
+
+			// Process each file
+			files.forEachCallback(function (file, cb) {
+				var fn = path.join(cPath, file);
+				fs.stat(fn, function(err, stat) {
+					if (stat.isDirectory()) {
+						traverse(fn, cb);	// Recall ourselves if we found a directory
+					}
+					else {
+						filecallback(fn);		// Calls the file manipulator callback
+						cb();
+					}
+				});
+			},
+			next);
+		});
+	};
+
+	// Starts with the given path
+	traverse(tPath, callback);
 };
 
 module.exports = fs;
