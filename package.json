@@ -8,6 +8,7 @@
   ],
   "description": "A simple, node-based, static site generator",
   "dependencies": {
+    "marked": "^0.3.5",
     "tiptoe": "^1.0.0"
   },
   "licenses": [
