@@ -1,0 +1,21 @@
+{
+  "contributors": [
+    {
+      "name": "Sergio Moura",
+      "email": "sergio@moura.us",
+      "url": "http://moura.us"
+    }
+  ],
+  "description": "A simple, node-based, static site generator",
+  "dependencies": {
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+    }
+  ],
+  "name": "lemon",
+  "readme": "README.markdown",
+  "version": "0.0.1"
+}
